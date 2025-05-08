@@ -3,7 +3,7 @@ import Event from '../models/Event.js';
 import Task from '../models/Task.js';
 import Team from '../models/Team.js';
 import User from '../models/User.js'; // Assuming you have this
-
+import ResourceRequest from '../models/ResourceRequest.js';
 export const createEvent = async (req, res) => {
   try {
     const {
@@ -152,35 +152,48 @@ export const getEvents = async (req, res) => {
 };
 
 // @desc Get single event by ID (with populated data)
+
 export const getEventDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const event = await Event.findById(id).lean();
 
+    // Fetch Event
+    const event = await Event.findById(id).lean();
+    console.log(event)
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Manually populate teams in each assignment
+    // Populate teams inside assignments
     const populatedAssignments = await Promise.all(
       event.assignments.map(async (assignment) => {
         const teamDocs = await Team.find({ _id: { $in: assignment.teams } }).lean();
         return {
           ...assignment,
-          teams: teamDocs,
+          assignedTeams: teamDocs, // Renaming for clarity
         };
       })
     );
 
-    event.assignments = populatedAssignments;
+    // Fetch related Resource Requests
+    const resourceRequests = await ResourceRequest.find({ eventId: id }).lean();
 
-    res.json(event);
+    // Final structured response
+    const response = {
+      eventName: event.eventName,
+      description: event.description,
+      createdAt: event.createdAt,
+      location: event.location,
+      tasks: populatedAssignments,
+      resourceRequests,
+    };
+
+    res.json(response);
   } catch (err) {
     console.error("Error fetching event details:", err);
     res.status(500).json({ message: "Server error while fetching event details" });
   }
 };
-
 // @desc Update an event
 export const updateEvent = async (req, res) => {
   try {

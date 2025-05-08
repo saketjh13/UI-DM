@@ -104,7 +104,7 @@ const LoginPage = () => {
 
       switch (role.toLowerCase()) {
         case "admin":
-          navigate("/admin/dashboard");
+          navigate("/events");
           break;
         case "responder":
           navigate("/responder/dashboard");

@@ -1,33 +1,76 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useResources } from "../../context/ResourceContext"; // 👈 Make sure this path is correct
 
-const resourceOptions = [
-  "Medical Kits",
-  "Food Packets",
-  "Shelters",
-  "Ambulances",
-];
-
-const RequestResourceForm = () => {
-  const [selectedResource, setSelectedResource] = useState("");
+const RequestResourceForm = ({ teamId, eventId, taskId }) => {
+  const { resources, loading, error: resourceError } = useResources();
+  const [selectedResourceId, setSelectedResourceId] = useState("");
+  const [customResourceName, setCustomResourceName] = useState("");
   const [quantity, setQuantity] = useState("");
   const [notes, setNotes] = useState("");
+  const [resourceType, setResourceType] = useState("");
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Later: send to backend
-    console.log({
-      resource: selectedResource,
+    let finalResourceName = customResourceName;
+    let resourceId = null;
+    const defaultResource = resources[0] || {}; 
+
+const teamId = defaultResource.teamId;
+const eventId = defaultResource.eventId;
+const taskId = defaultResource.taskId;
+
+    if (!customResourceName && selectedResourceId) {
+      const selectedResource = resources.find(res => res._id === selectedResourceId);
+      finalResourceName = selectedResource?.name || "";
+      resourceId = selectedResourceId;
+    }
+
+    if (!resourceType) {
+      setError("Please select a resource type.");
+      return;
+    }
+
+    if (!finalResourceName) {
+      setError("Please select or enter a resource name.");
+      return;
+    }
+
+    const payload = {
+      resourceType,
+      resourceName: finalResourceName,
       quantity,
       notes,
-    });
+      teamId,  // From props
+      eventId, // From props
+      taskId,  // From props
+    };
+    const fixedPayload = {
+      ...payload,
+      quantity: Number(payload.quantity), // convert to number
+      notes: payload.notes?.trim() || undefined // remove empty notes
+    };
 
-    // Mock success
-    setSuccess(true);
-    setSelectedResource("");
-    setQuantity("");
-    setNotes("");
+    try {
+      console.log(payload);
+
+      await axios.post("http://localhost:5000/api/request-resource", fixedPayload);
+      setSuccess(true);
+      setError("");
+
+      // Reset the form
+      setSelectedResourceId("");
+      setCustomResourceName("");
+      setQuantity("");
+      setNotes("");
+      setResourceType("");
+    } catch (err) {
+      console.error("Error submitting request:", err);
+      setError("Failed to submit request. Please try again later.");
+    }
   };
 
   return (
@@ -41,26 +84,72 @@ const RequestResourceForm = () => {
           Request submitted successfully!
         </div>
       )}
+      {error && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+      {resourceError && (
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+          {resourceError}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Resource Type */}
         <div>
           <label className="block font-medium text-gray-700 mb-1">
-            Select Resource
+            Resource Type
           </label>
           <select
-            value={selectedResource}
-            onChange={(e) => setSelectedResource(e.target.value)}
+            value={resourceType}
+            onChange={(e) => setResourceType(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded"
             required
           >
             <option value="">-- Choose --</option>
-            {resourceOptions.map((res) => (
-              <option key={res} value={res}>
-                {res}
+            <option value="Medical">Medical</option>
+            <option value="Food">Food</option>
+            <option value="Shelter">Shelter</option>
+            <option value="Transport">Transport</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        {/* Select from Available Resources */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-1">
+            Select Existing Resource
+          </label>
+          <select
+            value={selectedResourceId}
+            onChange={(e) => setSelectedResourceId(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+            disabled={loading}
+            required={!customResourceName}
+          >
+            <option value="">-- Choose --</option>
+            {resources.map((res) => (
+              <option key={res._id} value={res._id}>
+                {res.name}
               </option>
             ))}
           </select>
+        </div>
+
+        {/* OR Enter Custom Resource */}
+        <div>
+          <label className="block font-medium text-gray-700 mb-1">
+            Enter Custom Resource
+          </label>
+          <input
+            type="text"
+            value={customResourceName}
+            onChange={(e) => setCustomResourceName(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+            placeholder="E.g., Oxygen Cylinders, Water Bottles"
+            required={!selectedResourceId}
+          />
         </div>
 
         {/* Quantity */}
@@ -89,7 +178,7 @@ const RequestResourceForm = () => {
             onChange={(e) => setNotes(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded"
             rows="3"
-            placeholder="Add any specific message or instruction"
+            placeholder="Any special instructions?"
           ></textarea>
         </div>
 

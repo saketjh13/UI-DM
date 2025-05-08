@@ -23,57 +23,61 @@ import ResponderTaskPage from "./pages/ResponderTaskPage";
 import ResponderAssignedAlertsPage from "./pages/ResponderAssignedAlertsPage";
 import ResponderResourcesPage from "./pages/ResponderResourcesPage";
 import RequestResourceForm from "./components/Responders/RequestResourceForm";
+import { ResourceProvider } from "./context/ResourceContext";
 import "./index.css";
 
 const App = () => {
   return (
-    <Router>
-      <div className="flex flex-col h-screen">
-        {/* ✅ Fixed Navbar Positioning */}
-        <Navbar />
+    <ResourceProvider>
+      <Router>
+        <div className="flex flex-col h-screen">
+          {/* ✅ Fixed Navbar Positioning */}
+          <Navbar />
 
-        <div className="flex flex-grow">
-          {/* ✅ Sidebar */}
-          <Sidebar />
+          <div className="flex flex-grow">
+            {/* ✅ Sidebar */}
+            <Sidebar />
 
-          {/* ✅ Main Content Area */}
-          <div className="flex-grow overflow-auto ml-[250px] mt-[60px] p-6">
-            <Routes>
-              <Route path="/" element={<Navigate to="/events" replace />} />
+            {/* ✅ Main Content Area */}
+            <div className="flex-grow overflow-auto ml-[250px] mt-[60px] p-6">
+              <Routes>
+                <Route path="/" element={<Navigate to="/events" replace />} />
 
-              <Route
-                path="/citizen-dashboard"
-                element={
-                  <LayoutWrapper>
-                    <CitizenDashboard />
-                  </LayoutWrapper>
-                }
-              />
-              <Route path="/my-reports" element={<MyReportStatus />} /> {/* ✅ New Route */}
-              <Route path="/responder/dashboard" element={<ResponderDashboardPage />} />
-              <Route path="/responder/tasks" element={<ResponderTaskPage />} />
-              <Route path="/responder/alerts" element={<ResponderAssignedAlertsPage />} />
-              <Route path="/responder/resources" element={<ResponderResourcesPage />} />
-              <Route path="/responder/request-resource" element={<RequestResourceForm />} />
+                <Route
+                  path="/citizen-dashboard"
+                  element={
+                    <LayoutWrapper>
+                      <CitizenDashboard />
+                    </LayoutWrapper>
+                  }
+                />
+                <Route path="/my-reports" element={<MyReportStatus />} /> {/* ✅ New Route */}
+                <Route path="/responder/dashboard" element={<ResponderDashboardPage />} />
+                <Route path="/responder/tasks" element={<ResponderTaskPage />} />
+                <Route path="/responder/alerts" element={<ResponderAssignedAlertsPage />} />
+                <Route path="/responder/resources" element={<ResponderResourcesPage />} />
+                <Route path="/responder/request-resource" element={<RequestResourceForm />} />
 
-              <Route path="/events" element={<Events />} />
-              <Route path="/tasks" element={<TasksPage />} />
-              {/* <Route path="/resources" element={<Resources />} /> */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/report-disaster" element={<ReportDisaster />} />
-              <Route path="/alerts" element={<GroupedAlerts />} />
-              <Route path="/alert-details/:alertId" element={<AlertDetails />} />
-              <Route path="/teams" element={<Teams />} />
-              <Route path="/events/:eventId" element={<EventPage />} />
-              <Route path="/events/:eventId/dashboard" element={<EventDashboardPage />} />
-              <Route path="/events/create" element={<CreateEvent />} />
-              <Route path="/resources" element={<Resources />} />
-            </Routes>
+                <Route path="/events" element={<Events />} />
+                <Route path="/tasks" element={<TasksPage />} />
+                {/* <Route path="/resources" element={<Resources />} /> */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
+                <Route path="/report-disaster" element={<ReportDisaster />} />
+                <Route path="/alerts" element={<GroupedAlerts />} />
+                <Route path="/alert-details/:alertId" element={<AlertDetails />} />
+                <Route path="/teams" element={<Teams />} />
+                <Route path="/events/:eventId" element={<EventPage />} />
+                <Route path="/events/:eventId/dashboard" element={<EventDashboardPage />} />
+                <Route path="/events/create" element={<CreateEvent />} />
+                <Route path="/resources" element={<Resources />} />
+              </Routes>
+            </div>
           </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ResourceProvider>
+
   );
 };
 

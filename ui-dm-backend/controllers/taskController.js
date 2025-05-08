@@ -80,7 +80,7 @@ export const addTaskToEvent = async (req, res) => {
     if (!teamObj || !teamObj.teamId) {
       return res.status(404).json({ message: "Assigned team not found or teamId missing" });
     }
-    console.log(teamObj);
+    // console.log(teamObj);
     // Now safely assign everything
     const newTask = new Task({
       task,
